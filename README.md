@@ -12,6 +12,7 @@ app that talks to a real-time backend over WebSocket (or anything else)
 and stop losing messages on every network blip.
 
 📖 **Full API reference: [docs.getscalar.org/resumekit](https://docs.getscalar.org/resumekit/documentation/resumekit/)**
+🧪 **Runnable example: [Examples/BasicDemo](Examples/BasicDemo/)** (`swift run`)
 
 ```swift
 let coordinator = SessionCoordinator(
