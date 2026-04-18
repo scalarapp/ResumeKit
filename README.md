@@ -5,10 +5,13 @@
 [![Platforms](https://img.shields.io/badge/platforms-iOS%2015%20%7C%20macOS%2012%20%7C%20tvOS%2015%20%7C%20watchOS%208-lightgrey)](Package.swift)
 [![SPM](https://img.shields.io/badge/SPM-compatible-brightgreen)](https://swift.org/package-manager)
 [![License MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-docs.getscalar.org-1DAF8A)](https://docs.getscalar.org)
 
 Discord-style session-resume client for Swift. Drop it into any iOS / macOS
 app that talks to a real-time backend over WebSocket (or anything else)
 and stop losing messages on every network blip.
+
+📖 **Full API reference: [docs.getscalar.org](https://docs.getscalar.org)**
 
 ```swift
 let coordinator = SessionCoordinator(

@@ -1,0 +1,73 @@
+name: Deploy Docs
+
+on:
+  push:
+    branches: [main]
+  # Manual trigger for re-deploying without a code change.
+  workflow_dispatch: {}
+
+# Serialize doc builds — two concurrent deploys can race on the
+# `gh-pages` branch and leave it in a half-published state.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: write  # push to gh-pages branch
+
+jobs:
+  docs:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build DocC archive
+        run: |
+          # Build for static hosting at the root of docs.getscalar.org.
+          # No --hosting-base-path → relative URLs are rooted at /, so
+          # pages serve correctly under the custom domain CNAME.
+          # --disable-indexing drops the search index (heavy, not needed
+          # for a library this size; can be re-enabled later).
+          swift package \
+            --allow-writing-to-directory ./_site \
+            generate-documentation \
+            --target ResumeKit \
+            --disable-indexing \
+            --transform-for-static-hosting \
+            --output-path ./_site
+
+      - name: Add custom domain + root redirect
+        run: |
+          # CNAME tells GitHub Pages to serve from docs.getscalar.org.
+          # The file lives in the publish dir, not the repo main branch,
+          # so it doesn't leak into the source tree.
+          echo "docs.getscalar.org" > ./_site/CNAME
+
+          # DocC only emits /documentation/resumekit/ as the root —
+          # hitting the site root plain /index.html would 404 otherwise.
+          # Add a one-liner redirect so docs.getscalar.org goes straight
+          # into the docs instead of showing a confusing blank page.
+          cat > ./_site/index.html <<'HTML'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <meta charset="utf-8">
+              <title>ResumeKit Documentation</title>
+              <meta http-equiv="refresh" content="0; url=/documentation/resumekit/">
+              <link rel="canonical" href="/documentation/resumekit/">
+          </head>
+          <body>
+              Redirecting to <a href="/documentation/resumekit/">ResumeKit documentation</a>…
+          </body>
+          </html>
+          HTML
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          # Keep history so we can `git bisect` if a bad commit ships
+          # a broken doc build; set to true to discard on each push.
+          force_orphan: false
+          commit_message: "docs: deploy ${{ github.sha }}"
