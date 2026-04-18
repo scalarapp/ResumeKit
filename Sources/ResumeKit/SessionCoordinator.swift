@@ -85,8 +85,14 @@ public actor SessionCoordinator {
         AsyncStream { continuation in
             let id = UUID()
             continuations[id] = continuation
+            // onTermination is a @Sendable closure invoked off-actor when
+            // the consumer task finishes or cancels. Rebind self strongly
+            // via `guard let` so the Task captures a non-optional value —
+            // Swift 5.10 strict concurrency on Linux rejects capturing the
+            // weak binding directly through the Sendable boundary.
             continuation.onTermination = { [weak self] _ in
-                Task { await self?.removeContinuation(id) }
+                guard let self else { return }
+                Task { await self.removeContinuation(id) }
             }
         }
     }
