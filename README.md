@@ -83,7 +83,7 @@ Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/silverhans/ResumeKit", from: "0.1.0")
+    .package(url: "https://github.com/scalarapp/ResumeKit", from: "0.1.0")
 ]
 ```
 
